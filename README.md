@@ -81,6 +81,40 @@ wsl --list --verbose
 ```
 
 
+antes de prosequir vamos configurar para que o emulador funcione e se comunice com o roBrowserLegacy
+rathena\src\custom\defines_post.hpp
+```
+// Copyright (c) rAthena Dev Teams - Licensed under GNU GPL
+// For more information, see LICENCE in the main folder
+
+#ifndef CONFIG_CUSTOM_DEFINES_POST_HPP
+#define CONFIG_CUSTOM_DEFINES_POST_HPP
+
+/**
+ * rAthena configuration file (http://rathena.org)
+ * For detailed guidance on these check http://rathena.org/wiki/SRC/config/
+ **/
+
+// Disable packet obfuscation for roBrowser compatibility
+#ifdef PACKET_OBFUSCATION
+	#undef PACKET_OBFUSCATION
+#endif
+#ifdef PACKET_OBFUSCATION_WARN
+	#undef PACKET_OBFUSCATION_WARN
+#endif
+// END
+
+#endif /* CONFIG_CUSTOM_DEFINES_POST_HPP */
+
+```
+
+iremos usar a verção mais stavel para o roBrowserLegacy que é 20130618
+
+rathena\tools\docker\docker-compose.yml
+```
+           BUILDER_CONFIGURE: "--enable-packetver=20130618"
+```
+
 ### Start Projeto
 No seu terminal (PowerShell), entre na pasta do Docker primeiro:
 
@@ -105,6 +139,3 @@ docker compose run --rm builder
 docker compose up -d db login char map
 
 ```
-
-
-
