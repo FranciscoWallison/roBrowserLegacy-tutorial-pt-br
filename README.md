@@ -292,6 +292,7 @@ No terminal do projeto **roBrowserLegacy**, inicie o servidor de desenvolvimento
 npm run live
 
 ```
+*Mantenha este terminal aberto.*
 
 ---
 
