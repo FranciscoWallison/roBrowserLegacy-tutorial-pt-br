@@ -1,4 +1,3 @@
-Aqui está a documentação técnica revisada, com linguagem profissional, correções ortográficas e remoção de elementos visuais desnecessários.
 
 ---
 
