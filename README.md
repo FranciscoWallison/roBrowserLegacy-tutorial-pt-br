@@ -1,23 +1,30 @@
-#  Guia de Implantação: Ragnarok Online Web (rAthena + roBrowser)
-
-Este guia detalha a criação de um ambiente Ragnarok completo rodando no navegador, composto por três pilares:
-
-1. **Backend:** Servidor rAthena (Docker).
-2. **Asset Server:** Servidor de arquivos (Remote Client).
-3. **Frontend:** Interface do jogo (roBrowser Legacy).
+Aqui está a documentação técnica revisada, com linguagem profissional, correções ortográficas e remoção de elementos visuais desnecessários.
 
 ---
 
-## 🛠️ Parte 1: Pré-requisitos
+# Guia de Implantação: Ragnarok Online Web (rAthena + roBrowser)
 
-Ferramentas essenciais para o funcionamento do ambiente.
+Este guia detalha a configuração de um ambiente Ragnarok Online rodando no navegador, composto por três módulos principais:
 
-### 1. Node.js (Runtime JavaScript)
+1. **Backend:** Servidor rAthena (Docker).
+2. **Asset Server:** Servidor de arquivos estáticos (Remote Client).
+3. **Frontend:** Interface do cliente web (roBrowser Legacy).
 
-Necessário para executar o cliente web e o proxy.
+> **Referência de Versão:** Este guia utiliza a versão de pacote **2013-06-18**.
+> [Download do Cliente Hexed (2013-06-18)](https://github.com/Cronus-Emulator/CronusClient/tree/master/Hexeds/Ragexe/2013/2013-06-18)
 
-* **Download:** [nodejs.org](https://nodejs.org/en/download) (Recomendado: Versão LTS).
-* **Validação:** No terminal, execute:
+---
+
+## 1. Pré-requisitos do Sistema
+
+Ferramentas essenciais para a execução do ambiente.
+
+### 1.1 Node.js (Runtime JavaScript)
+
+Necessário para executar o cliente web e o proxy de conexão.
+
+1. Faça o download da versão **LTS** em: [nodejs.org](https://nodejs.org/en/download).
+2. Valide a instalação no terminal:
 ```powershell
 node -v
 npm -v
@@ -25,7 +32,7 @@ npm -v
 ```
 
 
-* **Instalação do Proxy Global:**
+3. Instale o proxy de WebSocket globalmente:
 ```powershell
 npm install -g wsproxy
 
@@ -33,31 +40,31 @@ npm install -g wsproxy
 
 
 
-### 2. WSL 2 e Docker (Servidor)
+### 1.2 WSL 2 e Docker (Servidor)
 
-Se já possui o Docker configurado, pule para a **Parte 2**.
+Necessário para a virtualização do servidor rAthena.
 
-1. **Verificar Arquitetura do Processador:**
+1. **Verifique a Arquitetura do Processador:**
 ```powershell
 if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { Write-Host "Baixe Docker ARM" } else { Write-Host "Baixe Docker x86_64" }
 
 ```
 
 
-2. **Instalar WSL 2:**
-Execute como Admin: `wsl --install` e **reinicie o computador**.
-3. **Instalar Docker Desktop:**
-Durante a instalação, marque a opção: `Use WSL 2 instead of Hyper-V`.
+2. **Instale o WSL 2:**
+Execute o PowerShell como Administrador: `wsl --install`. Reinicie o computador após o término.
+3. **Instale o Docker Desktop:**
+Durante a instalação, certifique-se de marcar a opção: `Use WSL 2 instead of Hyper-V`.
 
 ---
 
-## 🖥️ Parte 2: Backend (rAthena via Docker)
+## 2. Backend (rAthena via Docker)
 
-Preparação do emulador para aceitar conexões do navegador.
+Configuração do emulador para aceitar conexões via navegador.
 
-### 1. Desativar Criptografia de Pacotes
+### 2.1 Desativar Criptografia de Pacotes
 
-O roBrowser precisa ler os pacotes "limpos". Edite o arquivo:
+O roBrowser requer a leitura de pacotes descriptografados. Edite o arquivo:
 `rathena\src\custom\defines_post.hpp`
 
 ```cpp
@@ -66,55 +73,56 @@ O roBrowser precisa ler os pacotes "limpos". Edite o arquivo:
 
 // Desativa a ofuscação para compatibilidade com roBrowser
 #ifdef PACKET_OBFUSCATION
-	#undef PACKET_OBFUSCATION
+    #undef PACKET_OBFUSCATION
 #endif
 #ifdef PACKET_OBFUSCATION_WARN
-	#undef PACKET_OBFUSCATION_WARN
+    #undef PACKET_OBFUSCATION_WARN
 #endif
 
 #endif /* CONFIG_CUSTOM_DEFINES_POST_HPP */
 
 ```
 
-### 2. Definir Versão do Cliente (PacketVer)
+### 2.2 Definir Versão do Pacote
 
-Vamos fixar a versão **20130618** (a mais estável para Web).
+Fixar a versão do servidor para 20130618.
 Edite o arquivo: `rathena\tools\docker\docker-compose.yml`
 
+Localize a seção `environment` e ajuste a variável:
+
 ```yaml
-# Localize a seção 'environment' e ajuste:
 BUILDER_CONFIGURE: "--enable-packetver=20130618"
 
 ```
 
-### 3. Compilar e Iniciar
+### 2.3 Compilar e Iniciar
 
-Abra o PowerShell na pasta do Docker (`cd rathena\tools\docker`) e execute:
+No PowerShell, navegue até a pasta do Docker (`cd rathena\tools\docker`) e execute a sequência:
 
 ```powershell
-# 1. Limpeza de containers e orfãos
+# 1. Parar containers e remover volumes órfãos
 docker compose down --remove-orphans
 
-# 2. Remover binários antigos (garante recompilação limpa)
+# 2. Limpar binários antigos (garante recompilação limpa)
 docker compose run --rm builder sh -c "rm -f /rathena/login-server /rathena/char-server /rathena/map-server /rathena/web-server"
 
 # 3. Compilar o Servidor
 docker compose run --rm builder
 
-# 4. Iniciar (Login, Char e Map)
+# 4. Iniciar serviços (Login, Char e Map)
 docker compose up -d db login char map
 
 ```
 
 ---
 
-## 📂 Parte 3: Remote Client (Arquivos de Recursos)
+## 3. Remote Client (Servidor de Arquivos)
 
-Este projeto serve os arquivos `.grf`, músicas e dados do jogo para o navegador.
+Este projeto serve os arquivos `.grf`, áudio e dados do jogo.
 
-### 1. Instalação
+### 3.1 Instalação
 
-1. Baixe ou clone: [roBrowserLegacy-RemoteClient-JS](https://github.com/FranciscoWallison/roBrowserLegacy-RemoteClient-JS)
+1. Clone ou baixe: [roBrowserLegacy-RemoteClient-JS](https://github.com/FranciscoWallison/roBrowserLegacy-RemoteClient-JS)
 2. Instale as dependências:
 ```powershell
 cd roBrowserLegacy-RemoteClient-JS
@@ -124,18 +132,18 @@ npm install
 
 
 
-### 2. Organização dos Arquivos (Assets)
+### 3.2 Organização dos Arquivos (Assets)
 
-Você deve copiar os arquivos do seu cliente Ragnarok para dentro da pasta deste projeto. A estrutura deve ficar assim:
+Copie as pastas do seu cliente Ragnarok (baseado na versão 2013-06-18) para a raiz deste projeto. A estrutura deve ficar exatamente assim:
 
 ```text
 roBrowserLegacy-RemoteClient-JS/
-├── AI/            <-- Copie do seu cliente
-├── BGM/           <-- Copie do seu cliente
-├── System/        <-- Copie do seu cliente
+├── AI/            <-- Copiar do cliente original
+├── BGM/           <-- Copiar do cliente original
+├── System/        <-- Copiar do cliente original
 ├── resources/
-│   ├── data.grf   <-- Copie do seu cliente
-│   └── DATA.INI   <-- Crie/Edite este arquivo
+│   ├── data.grf   <-- Copiar do cliente original
+│   └── DATA.INI   <-- Criar/Editar este arquivo
 
 ```
 
@@ -147,34 +155,25 @@ roBrowserLegacy-RemoteClient-JS/
 
 ```
 
-### 3. Iniciar Servidor de Arquivos
+### 3.3 Inicialização
 
 ```powershell
 npm start
 
 ```
 
-*(Mantenha este terminal aberto)*
+*Mantenha este terminal aberto.*
 
 ---
 
-## 🌐 Parte 4: Frontend (O Navegador)
+## 4. Frontend (Interface Web)
 
-A interface que o jogador irá acessar.
+A aplicação cliente que roda no navegador.
 
-### 1. Instalação e Configuração
+### 4.1 Instalação e Configuração
 
-1. Baixe ou clone: [roBrowserLegacy](https://github.com/MrAntares/roBrowserLegacy)
-2. **Configurar Versão do Pacote:**
-Vá até `roBrowserLegacy\applications\pwa\` e edite (ou crie) o arquivo `Config.local.js`. Adicione/altere a linha para coincidir com o rAthena:
-```javascript
-// Dentro do objeto de configuração
-packetver: 20130618,
-
-```
-
-
-3. Instale as dependências:
+1. Clone ou baixe: [roBrowserLegacy](https://github.com/MrAntares/roBrowserLegacy)
+2. Instale as dependências:
 ```powershell
 cd roBrowserLegacy
 npm install
@@ -182,22 +181,31 @@ npm install
 ```
 
 
+3. **Configurar Versão do Pacote:**
+Edite o arquivo `roBrowserLegacy\applications\pwa\Config.local.js`. Se não existir, crie-o. Adicione a configuração:
+```javascript
+// Configuração para compatibilidade com o backend
+packetver: 20130618,
 
-### 2. Iniciar o Proxy WebSocket
+```
 
-O navegador não fala TCP puro, então precisamos de um tradutor.
-**Abra um NOVO terminal** e rode:
+
+
+### 4.2 Iniciar Proxy WebSocket
+
+O navegador não se comunica diretamente via TCP, exigindo um proxy.
+Abra um **novo terminal** e execute:
 
 ```powershell
 wsproxy -p 5999
 
 ```
 
-*(Mantenha este terminal aberto. O roBrowser vai conectar aqui, e o proxy repassa para o rAthena).*
+*Mantenha este terminal aberto.*
 
-### 3. Iniciar o Cliente Web
+### 4.3 Iniciar Aplicação Web
 
-No terminal do projeto **roBrowserLegacy**, inicie o modo de desenvolvimento:
+No terminal do projeto **roBrowserLegacy**, inicie o servidor de desenvolvimento:
 
 ```powershell
 npm run live
@@ -206,13 +214,13 @@ npm run live
 
 ---
 
-###  Resumo de Execução
+## Resumo de Execução
 
-Para jogar, você deve ter 4 coisas rodando simultaneamente:
+Para o funcionamento correto, quatro processos devem estar rodando simultaneamente em terminais distintos:
 
-1.  **Docker:** rAthena (Login/Char/Map).
-2.  **RemoteClient:** `npm start` (Serve os arquivos).
-3.  **WSProxy:** `wsproxy -p 5999` (Faz a ponte da conexão).
-4. 🌐 **roBrowser:** `npm run live` (O site do jogo).
+1. **Docker:** Backend rAthena (Login/Char/Map).
+2. **RemoteClient:** `npm start` (Servidor de arquivos).
+3. **WSProxy:** `wsproxy -p 5999` (Ponte de conexão).
+4. **roBrowser:** `npm run live` (Interface do jogo).
 
-Acesse: `http://localhost:8080` (ou a porta indicada no terminal).
+Acesse o jogo através do endereço exibido no terminal do roBrowser (geralmente `http://localhost:8080`).
