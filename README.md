@@ -1,5 +1,5 @@
 
-# Guia de Instalação: WSL 2 + Docker Desktop (Windows 11)
+# Instalação: WSL 2 + Docker Desktop (Windows 11)
 
 Este documento cobre a preparação do ambiente (WSL 2) e a instalação do container engine (Docker Desktop), garantindo a melhor performance e compatibilidade para desenvolvimento.
 
@@ -81,5 +81,30 @@ wsl --list --verbose
 ```
 
 
-* *Resultado esperado:* Deve aparecer `docker-desktop` e `docker-desktop-data` com `Running` e `Version: 2`.
+### Start Projeto
+No seu terminal (PowerShell), entre na pasta do Docker primeiro:
+
+```powershell
+cd rathena\tools\docker
+
+```
+
+Rode tudo assim:
+
+```powershell
+# 1. Parar tudo (remove containers e redes órfãs)
+docker compose down --remove-orphans
+
+# 2. Limpar binários antigos (Usando o próprio contexto do compose)
+docker compose run --rm builder sh -c "rm -f /rathena/login-server /rathena/char-server /rathena/map-server /rathena/web-server"
+
+# 3. Recompilar
+docker compose run --rm builder
+
+# 4. Iniciar servidores (em background)
+docker compose up -d db login char map
+
+```
+
+
 
