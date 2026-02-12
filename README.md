@@ -122,7 +122,25 @@ Este projeto serve os arquivos `.grf`, áudio e dados do jogo.
 ### 3.1 Instalação
 
 1. Clone ou baixe: [roBrowserLegacy-RemoteClient-JS](https://github.com/FranciscoWallison/roBrowserLegacy-RemoteClient-JS)
-2. Instale as dependências:
+
+3.configurações crie um arquivo na raiz chamdo `.env`
+
+exemplo:
+
+```
+PORT=3338
+CLIENT_PUBLIC_URL=http://127.0.0.1:8000
+NODE_ENV=development
+
+# Cache settings
+CACHE_MAX_FILES=100
+CACHE_MAX_MEMORY_MB=256
+
+```
+
+
+
+4. Instale as dependências:
 ```powershell
 cd roBrowserLegacy-RemoteClient-JS
 npm install
