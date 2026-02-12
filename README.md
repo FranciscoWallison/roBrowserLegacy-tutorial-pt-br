@@ -111,6 +111,8 @@ docker compose run --rm builder
 # 4. Iniciar serviços (Login, Char e Map)
 docker compose up -d db login char map
 
+5. Para tudo
+docker compose down
 ```
 
 ---
