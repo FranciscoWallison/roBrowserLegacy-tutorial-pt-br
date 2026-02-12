@@ -37,8 +37,6 @@ npm install -g wsproxy
 
 ```
 
-
-
 ### 1.2 WSL 2 e Docker (Servidor)
 
 Necessário para a virtualização do servidor rAthena.
@@ -49,17 +47,56 @@ if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { Write-Host "Baixe Docker ARM" } e
 
 ```
 
+## Passo 2: Configuração do WSL 2 (Windows Subsystem for Linux)
 
-2. **Instale o WSL 2:**
-Execute o PowerShell como Administrador: `wsl --install`. Reinicie o computador após o término.
-3. **Instale o Docker Desktop:**
-Durante a instalação, certifique-se de marcar a opção: `Use WSL 2 instead of Hyper-V`.
+1. Abra o **PowerShell** como **Administrador**.
+2. Execute o comando abaixo para instalar o subsistema e a distribuição padrão (Ubuntu):
+```powershell
+wsl --install
 
+```
 ---
+
+## Passo 3: Instalação do Docker Desktop
+
+1. Baixe o instalador oficial: [Docker Desktop para Windows](https://docs.docker.com/desktop/setup/install/windows-install/).
+2. Durante a instalação, é **obrigatório** manter marcada a opção:
+* `Use WSL 2 instead of Hyper-V (recommended)`.
+
+
+3. **Reinicie o computador** para que as alterações de kernel entrem em vigor.
+---
+
+## Passo 4: Validação do Ambiente
+
+Após reiniciar a máquina, utilize os comandos abaixo no PowerShell para garantir que tudo está operante:
+
+### 1. Validar o Kernel Linux (WSL)
+
+Execute `wsl` para entrar no terminal Linux. Se aparecer o prompt com `root` ou seu nome de usuário, a instalação foi bem-sucedida:
+
+```powershell
+.\wsl
+# O terminal deve mudar para algo como: root@NOME-DA-MAQUINA:/mnt/c/Users/...
+
+```
+
+*Para sair do terminal Linux e voltar ao PowerShell, digite `exit`.*
+
+### 2. Validar o Docker
+
+Verifique se o motor do Docker está rodando e acessível:
+
+```powershell
+docker --version
+
+```
 
 ## 2. Backend (rAthena via Docker)
 
 Configuração do emulador para aceitar conexões via navegador.
+
+1. Clone ou baixe: [rathena](https://github.com/rathena/rathena)
 
 ### 2.1 Desativar Criptografia de Pacotes
 
@@ -203,9 +240,34 @@ npm install
 3. **Configurar Versão do Pacote:**
 Edite o arquivo `roBrowserLegacy\applications\pwa\Config.local.js`. Se não existir, crie-o. Adicione a configuração:
 ```javascript
-// Configuração para compatibilidade com o backend
-packetver: 20130618,
-
+/**
+ * ROBrowser Local Configuration
+ * Configured for local rAthena + roBrowserLegacy-RemoteClient-JS
+ */
+window.ROConfigLocal = {
+	remoteClient: 'http://127.0.0.1:3338/',
+	servers: [
+		{
+			display: 'Meu Servidor Ragnarok',
+			desc: 'Servidor local rAthena',
+			address: '127.0.0.1',
+			port: 6900,
+			version: 25,
+			langtype: 12,
+			packetver: 20130618,
+			renewal: true,
+			worldMapSettings: { episode: 98 },
+			packetKeys: false,
+			socketProxy: 'ws://127.0.0.1:5999/',
+			adminList: [2000000],
+			remoteClient: 'http://127.0.0.1:3338/'
+		}
+	],
+	skipIntro: true,
+	skipServerList: true,
+	development: true,
+	enableConsole: true
+};
 ```
 
 
