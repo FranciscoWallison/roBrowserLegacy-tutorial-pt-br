@@ -305,4 +305,4 @@ Para o funcionamento correto, quatro processos devem estar rodando simultaneamen
 3. **WSProxy:** `wsproxy -p 5999` (Ponte de conexão).
 4. **roBrowser:** `npm run live` (Interface do jogo).
 
-Acesse o jogo através do endereço exibido no terminal do roBrowser (geralmente `http://localhost:8080`).
+Acesse o jogo através do endereço exibido no terminal do roBrowser (geralmente `http://127.0.0.1:8080/applications/pwa/`).
